@@ -1,3 +1,5 @@
+# v1.0.2
+- Synchronize the project version with the rust configuration version
 # v1.0.1
 - Added random activity generation for YRQ.
 
