@@ -1,0 +1,68 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+env:
+  CARGO_NET_GIT_FETCH_WITH_CLI: true
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build-linux:
+    name: Build Linux Binary
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install Rust
+      uses: actions-rust-lang/setup-rust-toolchain@v1
+      with:
+        toolchain: stable
+        target: x86_64-unknown-linux-gnu
+
+    - name: Build Release Binary
+      run: cargo build --release --target x86_64-unknown-linux-gnu
+
+    - name: Strip Binary
+      run: strip "target/x86_64-unknown-linux-gnu/release/play-tonight"
+
+    - name: Rename binary with platform prefix
+      run: cp "target/x86_64-unknown-linux-gnu/release/play-tonight" "linux-x86_64-play-tonight"
+
+    - name: Upload to Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: linux-x86_64-play-tonight
+        tag_name: ${{ github.ref_name }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-windows:
+    name: Build Windows Binary
+    runs-on: windows-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install Rust
+      uses: actions-rust-lang/setup-rust-toolchain@v1
+      with:
+        toolchain: stable
+        target: x86_64-pc-windows-msvc
+
+    - name: Build Release Binary
+      run: cargo build --release --target x86_64-pc-windows-msvc
+
+    - name: Rename binary with platform prefix
+      run: cp "target/x86_64-pc-windows-msvc/release/play-tonight.exe" "windows-x86_64-play-tonight.exe"
+
+    - name: Upload to Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: windows-x86_64-play-tonight.exe
+        tag_name: ${{ github.ref_name }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
